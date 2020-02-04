@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { Component, useState, useEffect } from 'react';
+
 import { 
   Image,
   FlatList, 
-  StyleSheet } from 'react-native';
+  StyleSheet,
+  TouchableOpacity,
+  View } from 'react-native';
 
 import { 
   Container,
-  Header,
-  Title,
   Content,
   Footer,
   FooterTab,
@@ -27,76 +28,86 @@ import axios from 'axios';
 
 import EventCard from '../component/eventCard'
 
-const CategoryPage = (props) => {
-  const [events, setEvents] = useState({ events: [] });
-
-  useEffect(() => {
-    const idCategory = props.idCategory
+class CategoryPage extends Component {
+  constructor(){
+    super();
+    this.state={
+      events: []
+    }
+  }
+  componentDidMount(){
     axios.get(
-      `http://192.168.1.51:5000/api/v1/events`
+      'https://dumbtick-api.herokuapp.com/api/v1/events'
     )
     .then(res=>{  
-      setEvents(res.data)
-    },)
+      this.setState({
+        events: res.data.events
+      })
+    })
     .catch(err => {
       alert(err)
-    });
-      
-  }, [])
+    })
+  }
 
-  return (
-    <Container>
-      <Header style={{backgroundColor: '#07d9c4'}}>
-        <Body>
-          <Title style={styles.title}>AutomaTicket</Title>
-        </Body>
-        <Right>
-          <Image source={{uri: 'https://img.icons8.com/plasticine/2x/ticket.png'}} style={styles.img}/>          
-        </Right>
-      </Header>
+  componentWillUnmount(){
+    this.setState({
+      events: [],
+    })
+  }
 
-      <Content>
-        <CardItem style={styles.cardContainer}>
-          <Left>
-              <Text style={styles.eventType}>Category : Sport</Text>
-          </Left>
-        </CardItem>
-        <CardItem>
-          <Text>
-            Search by Date :
-          </Text>
-          <DatePicker
-            defaultDate={new Date()}
-            minimumDate={new Date(2010, 1, 1)}
-            maximumDate={new Date(2030, 12, 31)}
-            locale={"en"}
-            timeZoneOffsetInMinutes={undefined}
-            modalTransparent={false}
-            animationType={"fade"}
-            androidMode={"default"}
-            placeHolderText="Select date"
-            textStyle={{ color: "green" }}
-            placeHolderTextStyle={{ color: "#d3d3d3" }}
-            disabled={false}
-          />
-        </CardItem>
-        
-          <FlatList
-            data={events}
-            renderItem={({ item }) => 
-              <EventCard  
-                id={item.id}
-                title={item.title}
-                img={item.img}
-                price={item.price}
-                startTime={item.startTime}
-              />
-            }
-            keyExtractor={(item, index) => index}
-          />
-      </Content>
-    </Container>
+  customRender = ({ item, index }) => (
+    <TouchableOpacity 
+      onPress={() => {this.props.navigation.navigate('EventDetail', {id: item.id})}} >
+      <EventCard  
+        index={index}
+        id={item.id}
+        title={item.title}
+        img={item.img}
+        price={item.price}
+        startTime={item.startTime}
+      />
+    </TouchableOpacity>
   );
+  render(){
+    return (
+      <Container>
+        <Content>
+          <CardItem style={styles.cardContainer}>
+            <Left>
+                <Text style={styles.eventType}>Category : Sport</Text>
+            </Left>
+          </CardItem>
+          <CardItem>
+            <Text>
+              Search by Date :
+            </Text>
+            <DatePicker
+              defaultDate={new Date()}
+              minimumDate={new Date(2010, 1, 1)}
+              maximumDate={new Date(2030, 12, 31)}
+              locale={"en"}
+              timeZoneOffsetInMinutes={undefined}
+              modalTransparent={false}
+              animationType={"fade"}
+              androidMode={"default"}
+              placeHolderText="Select date"
+              textStyle={{ color: "green" }}
+              placeHolderTextStyle={{ color: "#d3d3d3" }}
+              disabled={false}
+            />
+          </CardItem>
+          <View>
+          <FlatList
+            data={this.state.events}
+            renderItem={this.customRender}
+            numColumns={3}
+            keyExtractor={(item, index) => item.id.toString()}
+          />
+          </View>
+        </Content>
+      </Container>
+    );
+  }
 }
 
 export default CategoryPage;

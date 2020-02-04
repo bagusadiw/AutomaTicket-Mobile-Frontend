@@ -1,17 +1,13 @@
-import React from 'react';
+import React, {useState, useEffect}from 'react';
 import { 
+  AsyncStorage,
   Image, 
   StyleSheet } from 'react-native';
 
-import { 
-  Container, 
-  Header, 
-  Content, 
+import {   
   Card, 
   CardItem, 
-  Thumbnail, 
   Text, 
-  Button, 
   Icon, 
   Left,
   Body, 
@@ -20,77 +16,120 @@ import {
 
 import NumberFormat from 'react-number-format';
 import moment from 'moment';
+import axios from 'axios';
 
 const EventCard = (props) => {
-  if(props.id%2 !== 0){
-    return (
-      <Card style={styles.card}>
-        <CardItem style={styles.sectionTitle1}>
-          <Text numberOfLines={1} style={styles.title}>
-            {props.title}
-          </Text>
-        </CardItem>
+  const [favorited, setFavorited] = useState({ favorited: true });
+  
+  useEffect(() => {
+      axios.post(
+        'https://dumbtick-api.herokuapp.com/api/v1/favorites/show', {
+        idUser: AsyncStorage.getItem("id"),
+        idEvent: props.id
+      })
+      .then(res=>{  
+        setFavorited(res.data.favorited)
+      })
+      .catch(err => {
+        alert(err)
+      });
+  }, [favorited])
 
-        <CardItem cardBody style={styles.imgContainer}>
-          <Image source={{uri: props.img}} style={styles.img}/>
-          <View style={{position: 'absolute', backgroundColor:'white', margin: 5, padding: 3}}>
-            <NumberFormat 
-              value={props.price/1000} 
-              displayType={'text'} 
-              thousandSeparator={true} prefix={'Rp.'} suffix={'K'}
-              renderText={value => <Text style={{fontSize: 14, color: 'black'}}>{value}</Text>} 
-            />      
-          </View>
-        </CardItem>
-        
-        <CardItem style={styles.sectionFooter1}>
-          <Text>{moment(props.startTime).format("DD MMM YYYY")}</Text>
-          <Text>{moment(props.startTime).utc().format("HH:mm")}</Text>
-          <Icon reverse color="#FF5555" name="heart" />  
-        </CardItem>
-      </Card>
-    );
+  const handleFavorite = () =>{
+    // if (favorited){
+    //   axios.post(
+    //     'https://dumbtick-api.herokuapp.com/api/v1/favorites/delete', {
+    //     idUser: AsyncStorage.getItem("id"),
+    //     idEvent: props.id
+    //   }, {
+    //     headers:{
+    //       authorization: "Bearer "+AsyncStorage.getItem("token")
+    //     }
+    //   })
+    //   .then(res=>{  
+    //     setFavorited(res.data.favorited)
+    //   })
+    //   .catch(err => {
+    //     alert(err)
+    //   });
+    // }else{
+    //   axios.post(
+    //     'https://dumbtick-api.herokuapp.com/api/v1/favorites/store', {
+    //     idUser: AsyncStorage.getItem("id"),
+    //     idEvent: props.id
+    //   }, {
+    //     headers:{
+    //       authorization: "Bearer "+AsyncStorage.getItem("token")
+    //     }
+    //   })
+    //   .then(res=>{  
+    //     setFavorited(res.data.favorited)
+    //   })
+    //   .catch(err => {
+    //     alert(err)
+    //   });
+    // } 
+    this.setState({
+      favorited: !this.state.favorited
+    })
+  };
+
+  let favoritesIcon;
+  if(favorited){
+    favoritesIcon =
+      <View onPress={handleFavorite} style={styles.favoritesContainer}>          
+        <Icon style={styles.filledFav} reverse name="heart" />  
+      </View>
   }else{
-    return (
-      <Card style={styles.card}>
-        <CardItem style={styles.sectionTitle1}>
-          <Text numberOfLines={1} style={styles.title}>
-            {props.title}
-          </Text>
-        </CardItem>
+    favoritesIcon =
+      <View onPress={handleFavorite} style={styles.favoritesContainer}>          
+        <Icon style={styles.defaultFav} reverse name="heart" />  
+      </View>
+  }
 
-        <CardItem cardBody style={styles.imgContainer}>
-          <Image source={{uri: props.img}} style={styles.img}/>
-          <View style={styles.pri}>
+  return (
+    <Card style={styles.card}>
+      <CardItem style={styles.titleCard}>
+        <Text numberOfLines={1} style={styles.title}>
+          {props.title}
+        </Text>
+      </CardItem>
+
+      <CardItem cardBody style={styles.body}>
+        <Image source={{uri: props.img}} style={styles.img}/>
+        <View style={styles.priceFavorites}>
+          <View style={styles.priceContainer}>
             <NumberFormat 
               value={props.price/1000} 
               displayType={'text'} 
               thousandSeparator={true} prefix={'Rp.'} suffix={'K'}
-              renderText={value => <Text style={{fontSize: 14, color: 'black'}}>{value}</Text>} 
+              renderText={value => <Text style={styles.price}>{value}</Text>} 
             />      
           </View>
-        </CardItem>
-        
-        <CardItem style={styles.sectionFooter1}>
-            <Text>{moment(props.startTime).format("DD MMM YYYY")}</Text>
-            <Text>{moment(props.startTime).utc().format("HH:mm")}</Text>
-            <Icon reverse color="#FF5555" name="heart" />  
-        </CardItem>
-      </Card>
-    );
-  }
+          {favoritesIcon}
+        </View>
+      </CardItem>
+      
+      <CardItem style={styles.footerCard}>
+        <Text style={styles.date}>{moment(props.startTime).format("DD MMM YYYY")} </Text>
+        <Text style={styles.date}> {moment(props.startTime).format("HH:mm")} </Text>
+      </CardItem>
+    </Card>
+  );
 }
 
 export default EventCard;
 
 const styles = StyleSheet.create({
   card:{
-    minWidth: 300, 
-    maxWidth: 300
+    width: 175,
+    alignSelf: 'center',
+    borderRadius: 10,
+    overflow: 'hidden'
   },
 
-  imgContainer:{
-    justifyContent: 'flex-end',
+  body:{
+    justifyContent: 'space-between',
     alignItems: 'flex-start'
   },
 
@@ -100,31 +139,64 @@ const styles = StyleSheet.create({
     flex: 1
   },
 
-  sectionTitle1: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: 'black',
-    backgroundColor: '#9fdfcd'
-  },
-
-  sectionTitle2: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: 'black',
-    backgroundColor: '#f4efd3'
+  titleCard: {
+    backgroundColor: 'white'
   },
 
   title:{
+    fontSize: 15,
     fontWeight: "bold",
+    color:'black'
   },
 
-  sectionFooter1:{
-    backgroundColor: '#9fdfcd',
-    justifyContent: 'space-between'
+  footerCard:{
+    backgroundColor: 'white',
+    justifyContent: 'space-between',
   },
 
-  sectionFooter2:{
-    backgroundColor: '#a4d4ae',
+  date:{
+    fontSize: 12,
+    color: 'black'
+  },
+
+  priceFavorites:{
+    flexDirection: 'row',
+    position: 'absolute',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    height: 20,
+    margin: 5,
+  },
+
+  priceContainer:{
+    backgroundColor: '#e3f2fd',
+    paddingRight: 5,
+    paddingLeft: 5,
+    borderRadius: 5
+  },
+
+  price:{
+    fontSize: 14,
+    fontWeight: 'bold', 
+    color: '#42a5f5'
+  },
+
+  favoritesContainer:{
+    margin: 5, 
+    padding: 3
+  },
+
+  filledFav:{
+    color: '#f44336',
+  },
+
+  defaultFav:{
+    color: 'gray'
+  },
+
+  dateContainer:{
+    flexDirection:'row',
     justifyContent: 'space-between'
   }
 });

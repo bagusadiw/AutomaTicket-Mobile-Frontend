@@ -1,73 +1,36 @@
-import 'react-native-gesture-handler';
 import React from 'react';
+import 'react-native-gesture-handler';
 
-// import {
-//   SafeAreaView,
-//   StyleSheet,
-//   ScrollView,
-//   View,
-//   Text,
-//   StatusBar,
-// } from 'react-native';
+import { 
+  Image,
+  FlatList, 
+  StyleSheet,
+  TouchableHighlight,
+  View } from 'react-native';
 
-// import {
-//   Header,
-//   LearnMoreLinks,
-//   Colors,
-//   DebugInstructions,
-//   ReloadInstructions,
-// } from 'react-native/Libraries/NewAppScreen';
+import {Container} from 'native-base';
 
-import Navigation from './src/navigation/navigation'
-import Home from './src/screens/home'
-import CategoryPage from './src/screens/categoryPage'
+import { Provider } from 'react-redux';
+// import store from './redux/store';
+
+import Header from './src/component/header'
+import Navigation from './src/navigation/navigation';
+import Home from './src/screens/home';
+// import CategoryList from './src/component/categoryList';
+import CategoryPage from './src/screens/categoryPage';
+import Footer from './src/component/footer';
 
 const App: () => React$Node = () => {
   return (
-    // <Navigation />
-    <Home />
-    // <CategoryPage />
+  	<Container>
+	  	<Header />
+	    <Navigation />
+	    <Footer />
+    </Container>
+    // <Home />
+    // <CategoryList />
 
   );
 };
-
-// const styles = StyleSheet.create({
-//   scrollView: {
-//     backgroundColor: Colors.lighter,
-//   },
-//   engine: {
-//     position: 'absolute',
-//     right: 0,
-//   },
-//   body: {
-//     backgroundColor: Colors.white,
-//   },
-//   sectionContainer: {
-//     marginTop: 32,
-//     paddingHorizontal: 24,
-//   },
-//   sectionTitle: {
-//     fontSize: 24,
-//     fontWeight: '600',
-//     color: Colors.black,
-//   },
-//   sectionDescription: {
-//     marginTop: 8,
-//     fontSize: 18,
-//     fontWeight: '400',
-//     color: Colors.dark,
-//   },
-//   highlight: {
-//     fontWeight: '700',
-//   },
-//   footer: {
-//     color: Colors.dark,
-//     fontSize: 12,
-//     fontWeight: '600',
-//     padding: 4,
-//     paddingRight: 12,
-//     textAlign: 'right',
-//   },
-// });
 
 export default App;
